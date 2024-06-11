@@ -1,5 +1,5 @@
 from exceptoins.exceptoins import UserNotFoundError
-from model.da.da import DataAccess
+from model.da.dataaccess import DataAccess
 from model.entity import User
 
 user_da = DataAccess(User)

@@ -31,7 +31,7 @@ class Validator:
             raise ValueError(message)
 
     @classmethod
-    def natinal_code_validator(cls, national_code, message):
+    def national_code_validator(cls, national_code, message):
         if re.match(r"^[0-9]{2,10}$", national_code):
             return national_code
         else:

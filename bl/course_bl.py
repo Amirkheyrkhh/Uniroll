@@ -1,5 +1,5 @@
 from controller.exceptions.my_exceptions import CourseNotFoundError
-from model.da.da import DataAccess
+from model.da.dataaccess import DataAccess
 from model.entity import course
 
 corse_da = DataAccess(course)

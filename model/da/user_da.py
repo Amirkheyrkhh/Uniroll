@@ -1,9 +1,9 @@
 from controller.exceptions.my_exceptions import UserNotFoundError
-from model.da.da import Da
+from model.da.dataaccess import DataAccess
 from model.entity.user import User
 
 
-class UserDa(Da):
+class UserDa(DataAccess):
     def save(self, user):
         self.connect()
         self.cursor.execute(
@@ -106,5 +106,5 @@ class UserDa(Da):
             user.user_id = user_tuple[0]
             user.role = user_tuple[12]
             return user
-        else:
-            raise UserNotFoundError()
+
+        return None
