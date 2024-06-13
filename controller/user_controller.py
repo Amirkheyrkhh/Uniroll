@@ -1,6 +1,7 @@
 from sqlalchemy.orm.exc import NoResultFound
 
 from controller.exceptions.my_exceptions import DuplicateUsernameError, ProfessorNotFoundError
+from model.entity.student import Student
 from model.entity.user import User
 from model.tools.decorator.decorators import exception_handling
 from model.da.dataaccess import DataAccess
@@ -94,6 +95,19 @@ class UserController:
         else:
             return False, "User not found"
 
+
+class StudentController:
+    @classmethod
+    @exception_handling
+    def save(cls, name, family, gender, national_code, birthday, address, phone_number, username, password, term, average_score):
+        session = DataAccess().get_session()
+        if not session.query(User).filter(User.username == username).first():
+            student = Student(name, family, gender, national_code, birthday, address, phone_number, username, password, term, average_score)
+            session.add(student)
+            session.commit()
+            return True, f"Student saved successfully {student}"
+        else:
+            raise DuplicateUsernameError
 
 class ProfessorController:
     @classmethod

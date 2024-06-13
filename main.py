@@ -1,15 +1,14 @@
-from controller.user_controller import UserController
-from model.da.dataaccess import DataAccess
-from model.entity.user import Gender
-from view.login_view import LoginWindow
+from view.login_view import LoginView
+from PyQt5.QtWidgets import QApplication
 
-def main():
-    window = LoginWindow()
-    window.mainloop()
 
 if __name__ == "__main__":
-    # da = DataAccess()
-    # da.create_tables()
-    main()
-
-# UserController.save("gholam", "shahi", Gender.Male, "0123456788", "sample", "sample", "09123456786", "gholam", "123456", "admin")
+    import sys
+    app = QApplication(sys.argv)
+    window = LoginView()
+    window.show()
+    sys.exit(app.exec_())
+#
+# StudentController.save("amir", "rajabi", Gender.Male, "0123456766", "sample", "sample", "09123456755", "amir", "123456", 1, None)
+# UserController.save("iman", "mazaheri", Gender.Male, "0123456760", "sample", "sample", "09123456750", "iman", "123456", "professor")
+# UserController.save("morteza", "omidi", Gender.Male, "0123055766", "sample", "sample", "09123456754", "morteza", "123456", "admin")

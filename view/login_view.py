@@ -1,46 +1,57 @@
-import tkinter as tk
-from tkinter import messagebox, ttk
-from ttkthemes import ThemedTk
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QLineEdit, QPushButton, QMessageBox
+from PyQt5.QtGui import QFont
 from controller.user_controller import UserController
-from view.components.placeholder_entry import PlaceholderEntry
 from view.professor_view import ProfessorView
+from view.student_view import StudentView
 
-
-class LoginWindow(ThemedTk):
+class LoginView(QWidget):
     def __init__(self):
-        super().__init__(theme="arc")
+        super().__init__()
 
-        self.title("Login")
-        self.geometry("300x200")
+        self.setWindowTitle("Login")
+        self.setGeometry(100, 100, 300, 200)
 
-        self.configure(bg='white')
+        self.layout = QVBoxLayout()
 
-        self.username_entry = PlaceholderEntry(self, placeholder="Username", font=("Helvetica", 12))
-        self.username_entry.pack(pady=10)
+        self.username_entry = QLineEdit(self)
+        self.username_entry.setPlaceholderText("Username")
+        self.username_entry.setFont(QFont("Helvetica", 12))
+        self.layout.addWidget(self.username_entry)
 
-        self.password_entry = PlaceholderEntry(self, placeholder="Password", show="*", font=("Helvetica", 12))
-        self.password_entry.pack(pady=10)
+        self.password_entry = QLineEdit(self)
+        self.password_entry.setPlaceholderText("Password")
+        self.password_entry.setEchoMode(QLineEdit.Password)
+        self.password_entry.setFont(QFont("Helvetica", 12))
+        self.layout.addWidget(self.password_entry)
 
-        self.login_button = ttk.Button(self, text="Login", command=self.login, style="RoundedButton.TButton")
-        self.login_button.pack(pady=10)
+        self.login_button = QPushButton("Login", self)
+        self.login_button.clicked.connect(self.login)
+        self.layout.addWidget(self.login_button)
 
+        self.setLayout(self.layout)
+
+        self.professor_view = None  # Keep a reference to the ProfessorView instance
 
     def login(self):
-        username = self.username_entry.get()
-        password = self.password_entry.get()
+        username = self.username_entry.text()
+        password = self.password_entry.text()
 
         try:
             result, user = UserController.find_by_username_and_password(username, password)
             if result:
-                if user.type == 'professor':
-                    self.destroy()
-                    window = ProfessorView(user)
-                    window.show()
+                if user.type == "professor":
+                    self.professor_view = ProfessorView(user)
+                    self.professor_view.show()
+                    self.close()
+                elif user.type == "admin":
+                    self.close()
+                elif user.type == "student":
+                    self.student_view = StudentView(user)
+                    self.student_view.show()
+                    self.close()
+                else:
+                    QMessageBox.critical(self, "Error", "Invalid user type.")
             else:
-                messagebox.showerror("Error", "Login failed. Please check your username and password.")
+                QMessageBox.critical(self, "Error", "Login failed. Please check your username and password.")
         except Exception as e:
-            messagebox.showerror("Error", f"An error occurred: {e}")
-
-# if __name__ == "__main__":
-#     window = LoginWindow()
-#     window.mainloop()
+            QMessageBox.critical(self, "Error", f"An error occurred: {e}")
