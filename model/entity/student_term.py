@@ -22,4 +22,4 @@ class StudentTerm(Base):
     student = relationship("Student", back_populates="terms")
     term = relationship("Term", back_populates="courses")
     status = Column(Enum(CourseStatus), nullable=False)
-    score = Column(Integer, nullable=True)
+    average_score = Column(Integer, nullable=True)
