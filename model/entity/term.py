@@ -2,14 +2,7 @@ from sqlalchemy import Column, Integer, ForeignKey, Table, DateTime, Enum
 from sqlalchemy.orm import relationship
 from model.entity.base import Base
 from enum import Enum as PyEnum
-
-
-# Association table for the many-to-many relationship between Term and Course
-# term_course_table = Table('term_course_tbl', Base.metadata,
-#                           Column('term_id', Integer, ForeignKey('term_tbl.id')),
-#                           Column('course_id', Integer, ForeignKey('course_tbl.id'))
-#                           )
-
+from datetime import datetime
 
 class Term(Base):
     __tablename__ = 'term_tbl'
@@ -21,6 +14,24 @@ class Term(Base):
         super().__init__()
         self.start_date = start_date
         self.end_date = end_date
-        self.ended = self.end_date is not None
-        self.educational_year = self.start_date.year
-        self.educational_half_year = 1 if self.start_date.month < 7 else 2
+
+    @property
+    def ended(self):
+        return self.end_date is not None
+
+    @ended.setter
+    def ended(self, value):
+        if value:
+            self.end_date = datetime.now()
+
+    @property
+    def educational_year(self):
+        return self.start_date.year
+
+    @property
+    def educational_half_year(self):
+        return 1 if self.start_date.month < 7 else 2
+    
+    @property
+    def educational_full_year(self):
+        return f"{self.educational_year}-{self.educational_year + 1}" if self.start_date.month < 7 else f"{self.educational_year - 1}-{self.educational_year}"
