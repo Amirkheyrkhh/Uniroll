@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import QMainWindow, QVBoxLayout, QLineEdit, QPushButton, QC
 from PyQt5.QtGui import QFont
 from PyQt5.QtCore import Qt
 from controller.course_controller import CourseController
+from controller.user_controller import UserController
 
 class ProfessorView(QMainWindow):
     def __init__(self, professor):
@@ -45,6 +46,7 @@ class ProfessorView(QMainWindow):
         self.prerequisites_list = QListWidget(self)
         self.prerequisites_list.setSelectionMode(QListWidget.MultiSelection)
         self.layout.addWidget(self.prerequisites_list)
+        self.load_prerequisites_list()
     
         self.add_course_button = QPushButton("Add Course", self)
         self.add_course_button.clicked.connect(self.add_course)
@@ -54,13 +56,29 @@ class ProfessorView(QMainWindow):
         self.save_course_button.clicked.connect(self.save_course)
         self.layout.addWidget(self.save_course_button)
     
-        self.edit_course_button = QPushButton("Edit Course", self)
-        self.edit_course_button.clicked.connect(self.edit_course)
-        self.layout.addWidget(self.edit_course_button)
+        # self.edit_course_button = QPushButton("Edit Course", self)
+        # self.edit_course_button.clicked.connect(self.edit_course)
+        # self.layout.addWidget(self.edit_course_button)
     
         self.remove_course_button = QPushButton("Remove Course", self)
         self.remove_course_button.clicked.connect(self.remove_course)
         self.layout.addWidget(self.remove_course_button)
+        
+    def refreshUI(self):
+        self.professor = UserController.find_by_user_id(self.professor.id)[1]
+        self.load_prerequisites_list()
+        
+        self.name_entry.clear()
+        self.capacity_entry.clear()
+        self.unit_count_entry.clear()
+        
+    def load_prerequisites_list(self):
+        self.prerequisites_list.clear()
+        for course in self.professor.courses:
+            item = QListWidgetItem(course.name)
+            item.setData(Qt.UserRole, course.id)
+            item.setCheckState(Qt.Unchecked)
+            self.prerequisites_list.addItem(item)
     
     def load_courses(self):
         self.courses_table.setRowCount(len(self.professor.courses))
@@ -100,7 +118,9 @@ class ProfessorView(QMainWindow):
             item = self.prerequisites_list.item(index)
             if item.checkState() == Qt.Checked:
                 course_id = item.data(Qt.UserRole)
-                prerequisites.append(next(course for course in self.professor.courses if course.id == course_id))
+                course = next((course for course in self.professor.courses if course.id == course_id), None)
+                if course:
+                    prerequisites.append(course)
     
         if not name or not capacity or not unit_count:
             QMessageBox.critical(self, "Error", "Please fill in all fields.")
@@ -120,10 +140,7 @@ class ProfessorView(QMainWindow):
             self.courses_table.setItem(self.courses_table.rowCount() - 1, 1, QTableWidgetItem(str(capacity)))
             self.courses_table.setItem(self.courses_table.rowCount() - 1, 2, QTableWidgetItem(str(unit_count)))
             self.courses_table.setItem(self.courses_table.rowCount() - 1, 3, QTableWidgetItem(", ".join([course.name for course in prerequisites])))
-            item = QListWidgetItem(name)
-            item.setData(Qt.UserRole, course.id)
-            item.setCheckState(Qt.Unchecked)
-            self.prerequisites_list.addItem(item)
+            self.refreshUI()
         else:
             QMessageBox.critical(self, "Error", "Could not add the course!")
     
@@ -143,8 +160,8 @@ class ProfessorView(QMainWindow):
         for index in range(self.prerequisites_list.count()):
             item = self.prerequisites_list.item(index)
             if item.checkState() == Qt.Checked:
-                course_id = item.data(Qt.UserRole)
-                prerequisites.append(next(course for course in self.professor.courses if course.id == course_id))
+                pre_req_id = item.data(Qt.UserRole)
+                prerequisites.extend(filter(lambda course: course.id == pre_req_id, self.professor.courses))
     
         if not name or not capacity or not unit_count:
             QMessageBox.critical(self, "Error", "Please fill in all fields.")
@@ -163,40 +180,24 @@ class ProfessorView(QMainWindow):
             self.courses_table.setItem(selected_row, 1, QTableWidgetItem(str(capacity)))
             self.courses_table.setItem(selected_row, 2, QTableWidgetItem(str(unit_count)))
             self.courses_table.setItem(selected_row, 3, QTableWidgetItem(", ".join([course.name for course in prerequisites])))
+            self.refreshUI()
         else:
             QMessageBox.critical(self, "Error", "Could not save the course!")
-    
-    def edit_course(self):
-        selected_row = self.courses_table.currentRow()
-        if selected_row < 0:
-            QMessageBox.critical(self, "Error", "No course selected.")
-            return
-    
-        course = self.professor.courses[selected_row]
-        self.name_entry.setText(course.name)
-        self.capacity_entry.setText(str(course.capacity))
-        self.unit_count_entry.setText(str(course.unit_count))
-    
-        self.prerequisites_list.clear()
-        for course in self.professor.courses:
-            item = QListWidgetItem(course.name)
-            item.setData(Qt.UserRole, course.id)
-            if course in self.professor.courses[selected_row].prerequisites:
-                item.setCheckState(Qt.Checked)
-            else:
-                item.setCheckState(Qt.Unchecked)
-            self.prerequisites_list.addItem(item)
-    
+     
     def remove_course(self):
         selected_row = self.courses_table.currentRow()
         if selected_row < 0:
             QMessageBox.critical(self, "Error", "No course selected.")
             return
-    
+
         course_id = self.professor.courses[selected_row].id
         result = CourseController.remove(course_id)
         if result:
-            self.courses_table.removeRow(selected_row)
-            del self.professor.courses[selected_row]
+            # self.courses_table.removeRow(selected_row)
+            # del self.professor.courses[selected_row]
+            
+            # Reload the professor's courses from the database
+            self.refreshUI()
+            self.load_courses()
         else:
             QMessageBox.critical(self, "Error", "Could not remove the course!")
