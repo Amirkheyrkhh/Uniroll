@@ -1,5 +1,5 @@
+import sys
 from model.tools.log.logging import Logger
-
 
 def exception_handling(function):
     def inner(*args, **kwargs):
@@ -11,7 +11,8 @@ def exception_handling(function):
                 Logger.info(f"{function.__qualname__}{args[1:]}")
             return output
         except Exception as e:
-            e.with_traceback()
+            _, _, tb = sys.exc_info()
+            e = e.with_traceback(tb)
             Logger.error(f"{function.__qualname__}{args[1:]} [RAISED EXCEPTION] : {e}")
             return False, str(e)
 
