@@ -12,7 +12,6 @@ class Course(Base):
     __tablename__ = 'course_tbl'
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(20), nullable=False)
-    professor_id = Column(Integer, ForeignKey('user_tbl.id'))
     capacity = Column(Integer, nullable=False)
     unit_count = Column(Integer, nullable=True)
     prerequisites = relationship("Course",
@@ -22,11 +21,10 @@ class Course(Base):
                                  backref="next_courses",
                                  cascade="save-update, merge")
 
-    def __init__(self, name, prerequisites, professor_id, capacity, unit_count):
+    def __init__(self, name, prerequisites, capacity, unit_count):
         super().__init__()
         self.course_id = None
         self.name = name
         self.prerequisites = prerequisites
-        self.professor_id = professor_id
         self.capacity = capacity
         self.unit_count = unit_count
