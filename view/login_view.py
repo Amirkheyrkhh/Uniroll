@@ -1,6 +1,10 @@
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QLineEdit, QPushButton, QMessageBox
 from PyQt5.QtGui import QFont
 from controller.user_controller import UserController
+from model.entity.admin import Admin
+from model.entity.professor import Professor
+from model.entity.student import Student
+from view.admin_view import AdminView
 from view.professor_view import ProfessorView
 from view.student_view import StudentView
 
@@ -39,13 +43,15 @@ class LoginView(QWidget):
         try:
             result, user = UserController.login(username, password)
             if result:
-                if user.type == "professor":
+                if isinstance(user, Professor):
                     self.professor_view = ProfessorView(user)
                     self.professor_view.show()
                     self.close()
-                elif user.type == "admin":
+                elif isinstance(user, Admin):
+                    self.admin_view = AdminView(user)
+                    self.admin_view.show()
                     self.close()
-                elif user.type == "student":
+                elif isinstance(user, Student):
                     self.student_view = StudentView(user)
                     self.student_view.show()
                     self.close()
