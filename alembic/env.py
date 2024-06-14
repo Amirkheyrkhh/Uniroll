@@ -10,6 +10,7 @@ from model.entity.user import User
 from model.entity.student import Student
 from model.entity.admin import Admin
 from model.entity.professor import Professor
+from model.entity.term import Term
 from model.entity.course import Course
 from model.entity.enrollment import Enrollment
 
