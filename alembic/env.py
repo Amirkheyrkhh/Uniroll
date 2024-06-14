@@ -12,7 +12,11 @@ from model.entity.admin import Admin
 from model.entity.professor import Professor
 from model.entity.term import Term
 from model.entity.course import Course
+from model.entity.student_term import StudentTerm
+from model.entity.professor_term import ProfessorTerm
 from model.entity.enrollment import Enrollment
+from model.entity.teaching import Teaching
+
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

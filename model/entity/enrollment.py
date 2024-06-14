@@ -4,7 +4,7 @@ from sqlalchemy.orm import relationship
 from enum import Enum as PyEnum
 
 enrollment_table = Table('enrollment_tbl', Base.metadata,
-                         Column('term_id', Integer, ForeignKey('term_tbl.id')),
+                         Column('student_term_id', Integer, ForeignKey('student_term_tbl.id')),
                          Column('course_id', Integer, ForeignKey('course_tbl.id')),
                          extend_existing=True
                          )
@@ -17,9 +17,7 @@ class CourseStatus(PyEnum):
 class Enrollment(Base):
     __tablename__ = 'enrollment_tbl'
     __table_args__ = {'extend_existing': True}
-    term_id = Column(Integer, ForeignKey('term_tbl.id'), primary_key=True)
+    student_term_id = Column(Integer, ForeignKey('student_term_tbl.id'), primary_key=True)
     course_id = Column(Integer, ForeignKey('course_tbl.id'), primary_key=True)
-    term = relationship("Term", back_populates="courses")
-    course = relationship("Course", back_populates="terms")
     status = Column(Enum(CourseStatus), nullable=False)
     score = Column(Integer, nullable=True)

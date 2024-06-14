@@ -37,7 +37,7 @@ class LoginView(QWidget):
         password = self.password_entry.text()
 
         try:
-            result, user = UserController.find_by_username_and_password(username, password)
+            result, user = UserController.login(username, password)
             if result:
                 if user.type == "professor":
                     self.professor_view = ProfessorView(user)

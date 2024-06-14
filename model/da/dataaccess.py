@@ -20,7 +20,3 @@ class DataAccess:
 
     def get_session(self):
         return self.Session()
-
-    def create_tables(self):
-        Base.metadata.bind = self.engine
-        Base.metadata.create_all(self.engine)

@@ -10,10 +10,10 @@ from model.da.dataaccess import DataAccess
 class UserController:
     @classmethod
     @exception_handling
-    def save(cls, name, family, gender, national_code, birthday, address, phone_number, username, password, type):
+    def save(cls, name, family, gender, national_code, birthday, address, phone_number, username, password):
         session = DataAccess().get_session()
         if not session.query(User).filter(User.username == username).first():
-            user = User(name, family, gender, national_code, birthday, address, phone_number, username, password, type)
+            user = User(name, family, gender, national_code, birthday, address, phone_number, username, password)
             session.add(user)
             session.commit()
             return True, f"User saved successfully {user}"
@@ -22,7 +22,7 @@ class UserController:
 
     @classmethod
     @exception_handling
-    def edit(cls, user_id, name, family, gender, national_code, address, phone_number, username, password, type):
+    def edit(cls, user_id, name, family, gender, national_code, address, phone_number, username, password):
         session = DataAccess().get_session()
         user = session.query(User).get(user_id)
         if user:
@@ -34,7 +34,6 @@ class UserController:
             user.phone_number = phone_number
             user.username = username
             user.password = password
-            user.type = type
             session.commit()
             return True, f"User edited successfully {user}"
         else:
@@ -70,51 +69,10 @@ class UserController:
 
     @classmethod
     @exception_handling
-    def find_by_family(cls, family):
-        session = DataAccess().get_session()
-        users = session.query(User).filter(User.family == family).all()
-        return True, users
-
-    @classmethod
-    @exception_handling
-    def find_by_username(cls, username):
-        session = DataAccess().get_session()
-        user = session.query(User).filter(User.username == username).first()
-        if user:
-            return True, user
-        else:
-            return False, "User not found"
-
-    @classmethod
-    @exception_handling
-    def find_by_username_and_password(cls, username, password):
+    def login(cls, username, password):
         session = DataAccess().get_session()
         user = session.query(User).filter(User.username == username, User.password == password).first()
         if user:
             return True, user
         else:
             return False, "User not found"
-
-
-class StudentController:
-    @classmethod
-    @exception_handling
-    def save(cls, name, family, gender, national_code, birthday, address, phone_number, username, password, term, average_score):
-        session = DataAccess().get_session()
-        if not session.query(User).filter(User.username == username).first():
-            student = Student(name, family, gender, national_code, birthday, address, phone_number, username, password, term, average_score)
-            session.add(student)
-            session.commit()
-            return True, f"Student saved successfully {student}"
-        else:
-            raise DuplicateUsernameError
-
-class ProfessorController:
-    @classmethod
-    @exception_handling
-    def get_courses(cls, professor_id):
-        session = DataAccess().get_session()
-        professor = session.query(User).get(professor_id)
-        if professor:
-            return professor.courses
-        raise ProfessorNotFoundError
