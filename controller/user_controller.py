@@ -1,20 +1,34 @@
-from sqlalchemy.orm.exc import NoResultFound
-
-from controller.exceptions.my_exceptions import DuplicateUsernameError, ProfessorNotFoundError
+from enum import Enum
+from controller.exceptions.my_exceptions import DuplicateUsernameError
+from model.entity.admin import Admin
+from model.entity.professor import Professor
 from model.entity.student import Student
 from model.entity.user import User
 from model.tools.decorator.decorators import exception_handling
 from model.da.dataaccess import DataAccess
 
 
+class UserType(Enum):
+    Student = 1,
+    Professor = 2,
+    Admin = 3
+
+
 class UserController:
     @classmethod
     @exception_handling
-    def save(cls, name, family, gender, national_code, birthday, address, phone_number, username, password):
+    def save(cls, name, family, gender, national_code, birthday, address, phone_number, username, password, type):
         session = DataAccess().get_session()
         if not session.query(User).filter(User.username == username).first():
-            user = User(name, family, gender, national_code, birthday, address, phone_number, username, password)
-            session.add(user)
+            if type == UserType.Student:
+                user = Student(name, family, gender, national_code, birthday, address, phone_number, username, password)
+                session.add(user)
+            elif type == UserType.Professor:
+                user = Professor(name, family, gender, national_code, birthday, address, phone_number, username, password)
+                session.add(user)
+            elif type == UserType.Admin:
+                user = Admin(name, family, gender, national_code, birthday, address, phone_number, username, password)
+                session.add(user)
             session.commit()
             return True, f"User saved successfully {user}"
         else:
@@ -72,7 +86,13 @@ class UserController:
     def login(cls, username, password):
         session = DataAccess().get_session()
         user = session.query(User).filter(User.username == username, User.password == password).first()
-        if user:
-            return True, user
-        else:
-            return False, "User not found"
+        
+        if not user:
+            return False, None
+    
+        for Model in [Student, Professor, Admin]:
+            person = session.query(Model).filter(Model.id == user.id).first()
+            if person:
+                return True, person
+    
+        return False, None
