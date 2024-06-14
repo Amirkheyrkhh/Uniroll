@@ -13,13 +13,17 @@ from model.da.dataaccess import DataAccess
 class CourseController:
     @classmethod
     @exception_handling
-    def save(cls, name, prerequisites, professor_id, capacity, unit_count):
+    def save(cls, name, prerequisites, capacity, unit_count):
         session = DataAccess().get_session()
-        course = Course(name, prerequisites, professor_id, capacity, unit_count)
+        
+        # Convert prerequisite IDs to Course instances
+        prerequisite_courses = session.query(Course).filter(Course.id.in_(prerequisites)).all()
+        
+        course = Course(name=name, prerequisites=prerequisite_courses, capacity=capacity, unit_count=unit_count)
         session.add(course)
         session.commit()
-        return True, f"Course saved successfully {course}"
-
+        return True, course
+    
     @classmethod
     @exception_handling
     def edit(cls, course_id, name, prerequisites, professor_id, capacity, unit_count):
@@ -133,3 +137,10 @@ class CourseController:
         session = DataAccess().get_session()
         professors = session.query(Professor).join(ProfessorTerm).join(Teaching).filter(Teaching.course_id == course_id).all()
         return True, professors if professors else "No professors found for the given course"
+    
+    @classmethod
+    @exception_handling
+    def find_by_term_id(cls, term_id):
+        session = DataAccess().get_session()
+        courses = session.query(Course).join(Teaching).join(ProfessorTerm).filter(ProfessorTerm.term_id == term_id).all()
+        return True, courses if courses else []
