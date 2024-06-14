@@ -1,3 +1,4 @@
+from datetime import datetime
 from sqlalchemy.orm.exc import NoResultFound
 from model.entity.term import Term
 from model.entity.student_term import StudentTerm, TermStatus
@@ -37,7 +38,7 @@ class TermController:
     @exception_handling
     def remove(cls, term_id):
         session = DataAccess().get_session()
-        term = session.query(TTerm).get(term_id)
+        term = session.query(Term).get(term_id)
         if term:
             session.delete(term)
             session.commit()
@@ -128,5 +129,18 @@ class TermController:
     @exception_handling
     def find_professors_by_term_id(cls, term_id):
         session = DataAccess().get_session()
-        professors = session.query(Professor).join(ProfessorTerm).filter(ProfessorTerm.term_id == term_id).all()
-        return True, professors if professors else "No professors found for the given term"
+        professor_terms = session.query(ProfessorTerm).filter(ProfessorTerm.term_id == term_id).all()
+        return True, professor_terms if professor_terms else []
+    
+    @classmethod
+    @exception_handling
+    def close_term(cls, term_id):
+        session = DataAccess().get_session()
+        term = session.query(Term).get(term_id)
+        if term:
+            term.end_date = datetime.now()
+            term.ended = True
+            session.commit()
+            return True, f"Term closed successfully {term}"
+        else:
+            return False, "Term not found"
