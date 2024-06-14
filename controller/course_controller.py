@@ -23,6 +23,8 @@ class CourseController:
             course = Course(name, prerequisite_objects, professor_id, capacity, unit_count)
             session.add(course)
             session.commit()
+            session.refresh(course)
+            session.close()
             return True, course
         else:
             raise ProfessorNotFoundError
@@ -56,6 +58,8 @@ class CourseController:
             course.unit_count = unit_count
 
         session.commit()
+        session.refresh(course)
+        session.close()
         return True, course
 
     @classmethod
@@ -66,6 +70,22 @@ class CourseController:
         if not course:
             raise CourseNotFoundError
 
+        # Remove the course from the prerequisites of other courses
+        for other_course in session.query(Course).all():
+            if course in other_course.prerequisites:
+                other_course.prerequisites.remove(course)
+
         session.delete(course)
         session.commit()
-        return True
+        session.close()
+        return True, course
+
+    @classmethod
+    @exception_handling
+    def load(cls, course_id):
+        session = DataAccess().get_session()
+        course = session.query(Course).get(course_id)
+        session.close()
+        if not course:
+            raise CourseNotFoundError
+        return course
