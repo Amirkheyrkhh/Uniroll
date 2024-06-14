@@ -18,6 +18,3 @@ class ProfessorTerm(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     professor_id = Column(Integer, ForeignKey('professor_tbl.id'))
     term_id = Column(Integer, ForeignKey('term_tbl.id'))
-    professor = relationship("Professor", back_populates="terms")
-    term = relationship("Term", back_populates="courses")
-    average_score = Column(Integer, nullable=True)
